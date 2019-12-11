@@ -21,13 +21,13 @@ import VizUtil as vu
 
 #non-interactive backend
 
-try:
-    sys.path.insert(0,os.environ['AR_SRC'])
+# try:
+#     sys.path.insert(0,os.environ['AR_SRC'])
 
-except KeyError:
-    sys.stderr.write("AmpliconReconstructor source directory bash variable ($AR_SRC) not found.\n")
-    sys.stderr.write("Is AmpliconReconstructor configured?")
-    sys.exit()
+# except KeyError:
+#     sys.stderr.write("AmpliconReconstructor source directory bash variable ($AR_SRC) not found.\n")
+#     sys.stderr.write("Is AmpliconReconstructor configured?")
+#     sys.exit()
 
 from bionanoUtil import *
 rcParams['font.family'] = 'sans-serif'
@@ -146,7 +146,7 @@ def plot_gene_track(currStart, relGenes, pTup, total_length, strand):
         #ax.plot([x,x_t],[y,y_t],color='grey',linewidth=0.4)
         
         text_angle,ha = vu.correct_text_angle(text_angle)
-        ax.text(x_t,y_t,i,color='grey',rotation=text_angle,ha=ha,va="center",fontsize=9,rotation_mode='anchor')
+        ax.text(x_t,y_t,i,color='k',rotation=text_angle,ha=ha,va="center",fontsize=9,rotation_mode='anchor')
 
         for exon in e_posns:
             if exon[1] > pTup[1] and exon[0] < pTup[2]:
@@ -205,8 +205,8 @@ def plot_ref_genome(ref_placements,cycle,total_length,segSeqD,imputed_status,lab
                 ax.text(x_t,y_t,txt,color='grey',rotation=text_angle,
                 ha=ha,va="center",fontsize=9,rotation_mode='anchor')
     
-        gene_tree = vu.parse_genes(seg_coord_tup[0])
-        relGenes = vu.rel_genes(gene_tree,seg_coord_tup,onco_set)
+        gene_tree = vu.parse_genes(seg_coord_tup[0],args.ref)
+        relGenes = vu.rel_genes(gene_tree,seg_coord_tup,copy.copy(onco_set))
         #plot the gene track
         plot_gene_track(refObj.abs_start_pos,relGenes,seg_coord_tup,total_length,cycle[ind][1])
 
@@ -343,12 +343,18 @@ parser.add_argument("-c", "--contigs", help="contig cmap file")
 parser.add_argument("-s", "--segs", help="segments cmap file")
 parser.add_argument("-g", "--graph", help="breakpoint graph file")
 parser.add_argument("-i", "--path_alignment", help="AR path alignment file")
+parser.add_argument("--ref",help="reference genome",choices=["hg19","hg38","GRCh37","GRCh38"],default="hg19")
 parser.add_argument("--sname", help="output prefix")
 parser.add_argument("--rot", help="number of segments to rotate counterclockwise",type=int,default=0)
 parser.add_argument("--label_segs",help="label segs with graph IDs",action='store_true')
 parser.add_argument("--gene_subset_file",help="File containing subset of genes to plot (e.g. oncogene genelist file)")
 
 args = parser.parse_args()
+
+if args.ref == "GRCh38":
+    args.ref == "hg38"
+
+print args.ref
 
 if not args.sname:
     args.sname = os.path.split(args.cycles_file)[1].split(".")[0] + "_"
